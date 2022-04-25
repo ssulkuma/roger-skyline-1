@@ -88,3 +88,15 @@ $ sudo systemctl restart ssh.service
 ```
 ______________________________________
 
+For the project, we're required to set firewall rules for services used outside our VM. In this case, the ssh service. First I want to check the status of my uncomplicated firewall:
+```
+$ sudo ufw status
+```
+The firewall's status is inactive so I want to activate it. To do that, I run the command:
+```
+$ sudo ufw enable
+```
+If I want to check existing rules for applications, I can run the command:
+```
+$ sudo ufw app list
+```
