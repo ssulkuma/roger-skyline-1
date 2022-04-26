@@ -115,3 +115,35 @@ $ sudo ufw default allow outgoing
 $ sudo allow 2211/tcp
 ```
 ______________________________________
+
+To protect for denial of service attacks (DOS) and protection for port scanning, I want to install fail2ban:
+```
+$ sudo apt-get install fail2ban
+```
+To enable fail2ban, I run the command:
+```
+$ sudo systemctl start fail2ban
+```
+To set up the configuration, I want to create /etc/fail2ban/jail.local file instead of using the /etc/fail2ban/jail.conf and modify that file as follows:
+```
+$ sudo vim /etc/fail2ban/jail.local
+```
+```
+[sshd]
+enabled = true
+port = 2211
+bantime = 1m
+findtime = 1m
+maxretry = 3
+
+[portscan]
+enabled = true
+bantime = 1m
+findtime = 1m
+maxretry = 1
+```
+To take the changes into account, I run the command:
+```
+$ sudo systemctl restart fail2ban
+```
+______________________________________
