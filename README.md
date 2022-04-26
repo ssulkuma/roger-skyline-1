@@ -147,3 +147,8 @@ To take the changes into account, I run the command:
 $ sudo systemctl restart fail2ban
 ```
 ______________________________________
+
+To list all the running services, I use the command:
+```
+$ sudo service --status-all
+```
