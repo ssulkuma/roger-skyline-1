@@ -152,3 +152,23 @@ To list all the running services, I use the command:
 ```
 $ sudo service --status-all
 ```
+______________________________________
+
+For the project, it's required to create a script which updates all the sources of packages and then my packages and logs the information. First I create a new file and write the script to it as follows:
+```
+$ vim update_script.sh
+```
+```
+#!/bin/bash
+date |& tee -a /var/log/update_script.log
+sudo apt update |& tee -a /var/log/update_script.log
+sudo apt upgrade |& tee -a /var/log/update_script.log
+```
+To schedule the script to run at the required times, I want to create and modify the crontab:
+```
+$ sudo crontab -e
+```
+```
+0 4 * * * sh /home/ssulkuma/update_script.sh
+@reboot sh /home/ssulkuma/update_script.sh
+```
