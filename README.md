@@ -174,7 +174,18 @@ $ sudo crontab -e
 ```
 ______________________________________
 
-It's also required to make a script to monitor changes in /etc/crontab and send email to root if there's been changes. So I create a new file again:
+It's also required to make a script to monitor changes in /etc/crontab and send email to root if there's been changes. So first, I want to install mailutils:
+```
+$ sudo apt install mailutils
+```
+I want to create a mail attachment file and write the needed information there.
+```
+$ vim crontab_notice.txt
+```
+```
+/etc/crontab has been modified within the past 24 hours.
+```
+Then I run the command to make a new script:
 ```
 $ vim check_script.sh
 ```
@@ -185,9 +196,10 @@ PREV_STAT=
 
 if [STAT = PREV_STAT]
 then
-  echo "/etc/crontab has not been modified since last check."
+  echo "/etc/crontab has not been modified within the past 24 hours."
 else
-  echo "/etc/crontab has been modified since last check."
+  echo "/etc/crontab has been modified within the past 24 hours. An email will be sent to root."
+  mail -s "/etc/crontab notification" root@roger < /home/ssulkuma/crontab_notice.txt
 fi
 ```
 To schedule the script to happen at midnight, I change the crontab again and add the line to it:
