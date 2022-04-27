@@ -172,3 +172,28 @@ $ sudo crontab -e
 0 4 * * * sh /home/ssulkuma/update_script.sh
 @reboot sh /home/ssulkuma/update_script.sh
 ```
+______________________________________
+
+It's also required to make a script to monitor changes in /etc/crontab and send email to root if there's been changes. So I create a new file again:
+```
+$ vim check_script.sh
+```
+```
+#!/bin/bash
+STAT=
+PREV_STAT=
+
+if [STAT = PREV_STAT]
+then
+  echo "/etc/crontab has not been modified since last check."
+else
+  echo "/etc/crontab has been modified since last check."
+fi
+```
+To schedule the script to happen at midnight, I change the crontab again and add the line to it:
+```
+$ sudo crontab -e
+```
+```
+0 0 * * * sh /home/ssulkuma/check_script.sh
+```
