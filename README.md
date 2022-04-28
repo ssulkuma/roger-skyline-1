@@ -169,7 +169,7 @@ To schedule the script to run at the required times, I want to create and modify
 $ sudo crontab -e
 ```
 ```
-0 4 * * * sh /home/ssulkuma/update_script.sh
+0 4 * * 1 sh /home/ssulkuma/update_script.sh
 @reboot sh /home/ssulkuma/update_script.sh
 ```
 ______________________________________
@@ -191,16 +191,17 @@ $ vim check_script.sh
 ```
 ```
 #!/bin/bash
-STAT=
-PREV_STAT=
+STAT=$(sudo stat -c %Z /etc/crontab)
+PREV_STAT=$(sudo cat /var/log/check_script.log)
 
-if [STAT = PREV_STAT]
+if [STAT -eq PREV_STAT]
 then
   echo "/etc/crontab has not been modified within the past 24 hours."
 else
   echo "/etc/crontab has been modified within the past 24 hours. An email will be sent to root."
   mail -s "/etc/crontab notification" root@roger < /home/ssulkuma/crontab_notice.txt
 fi
+stat -c %Z /etc/crontab | sudo tee /var/log/check_script.log
 ```
 To schedule the script to happen at midnight, I change the crontab again and add the line to it:
 ```
