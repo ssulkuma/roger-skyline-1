@@ -112,7 +112,7 @@ To change the firewall rules:
 ```
 $ sudo ufw default deny incoming
 $ sudo ufw default allow outgoing
-$ sudo allow 2211/tcp
+$ sudo ufw allow 2211/tcp
 ```
 ______________________________________
 
@@ -160,8 +160,8 @@ $ vim update_script.sh
 ```
 ```
 #!/bin/bash
-date | sudo tee -a /var/log/update_script.log && \
-sudo apt-get -y update | sudo tee -a /var/log/update_script.log && \
+date | sudo tee -a /var/log/update_script.log
+sudo apt-get -y update | sudo tee -a /var/log/update_script.log
 sudo apt-get -y upgrade | sudo tee -a /var/log/update_script.log
 ```
 To schedule the script to run at the required times, I want to create and modify the crontab:
@@ -194,7 +194,7 @@ $ vim check_script.sh
 STAT=$(sudo stat -c %Z /etc/crontab)
 PREV_STAT=$(sudo cat /var/log/check_script.log)
 
-if [STAT -eq PREV_STAT]
+if [$STAT -eq $PREV_STAT]
 then
   echo "/etc/crontab has not been modified within the past 24 hours."
 else
@@ -209,4 +209,22 @@ $ sudo crontab -e
 ```
 ```
 0 0 * * * sh /home/ssulkuma/check_script.sh
+```
+With the mailutils, we also need to update a new rule for firewall, so I check the info on Postfix and add a new port rule:
+```
+$ sudo ufw app list
+$ sudo ufw app info Postfix
+$ sudo ufw allow 25/tcp
+```
+# Web Part
+For the project we must set up a web server using either Apache or Nginx. I chose Apache. To install it, I run the commands:
+```
+$ sudo apt update
+$ sudo apt install apache2
+```
+To change the firewall settings of Apache:
+```
+$ sudo ufw app list
+$ sudo ufw app info Apache Full
+$ sudo ufw allow 80/tcp
 ```
