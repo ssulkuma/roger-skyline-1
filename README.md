@@ -160,9 +160,9 @@ $ vim update_script.sh
 ```
 ```
 #!/bin/bash
-date | tee -a /var/log/update_script.log && \
-sudo apt-get -y update | tee -a /var/log/update_script.log && \
-sudo apt-get -y upgrade | tee -a /var/log/update_script.log
+date | sudo tee -a /var/log/update_script.log && \
+sudo apt-get -y update | sudo tee -a /var/log/update_script.log && \
+sudo apt-get -y upgrade | sudo tee -a /var/log/update_script.log
 ```
 To schedule the script to run at the required times, I want to create and modify the crontab:
 ```
