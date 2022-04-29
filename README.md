@@ -228,3 +228,68 @@ $ sudo ufw app list
 $ sudo ufw app info Apache Full
 $ sudo ufw allow 80/tcp
 ```
+From the VM main window I go to Settings -> Network -> Adapter 1 Advanced -> Port forwarding and add a new rule (http / - / 80 / 192.168.56.253 / 80). Then by typing in the web browser the address, I check if I got it working.
+```
+http://192.168.56.1
+```
+To change the html of the page I modify the file:
+```
+$ vim /var/www/html/index.html
+```
+```
+<html>
+<head>
+<style>
+body {
+	background-color: black;
+	font-family: Verdana;
+	font-size: 12px;
+	color: white;
+	margin-left: 150px;
+	margin-top: 50px;
+}
+
+h1 {
+	color: purple;
+	font-size: 14px;
+}
+
+a {
+	color: white;
+	font-size: 11px;
+	text-transform: uppercase;
+	text-decoration: none;
+	letter-spacing: 2px;
+	transition: all .2s ease-in;
+}
+
+a:hover {
+	color: purple;
+	letter-spacing: 0.6em;
+}
+input {
+	width: 180px;
+	height: 14px;
+	background-color: black;
+	color: white;
+	border: 0;
+	border-bottom: 1px solid gray;
+}
+input:focus {
+	outline: none;
+}
+
+.login {
+	margin-left: 130px;
+}
+</style>
+	<title>Roger Skyline 1</title>
+</head>
+<body>
+	<h1>Roger Skyline 1</h1>
+	<p>[ Username ] <input></input></br>
+	[ Password&nbsp; ] <input type="password"></input></p>
+	<div class="login"><a href="https://dolly-web.net">Login</a></div>
+</body>
+</html>
+```
