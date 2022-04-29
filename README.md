@@ -160,9 +160,9 @@ $ vim update_script.sh
 ```
 ```
 #!/bin/bash
-date | sudo tee -a /var/log/update_script.log
-sudo apt-get -y update | sudo tee -a /var/log/update_script.log
-sudo apt-get -y upgrade | sudo tee -a /var/log/update_script.log
+date | tee -a /var/log/update_script.log
+apt update | tee -a /var/log/update_script.log
+apt upgrade | tee -a /var/log/update_script.log
 ```
 To schedule the script to run at the required times, I want to create and modify the crontab:
 ```
@@ -191,8 +191,8 @@ $ vim check_script.sh
 ```
 ```
 #!/bin/bash
-STAT=$(sudo stat -c %Z /etc/crontab)
-PREV_STAT=$(sudo cat /var/log/check_script.log)
+STAT=$(stat -c %Z /etc/crontab)
+PREV_STAT=$(cat /var/log/check_script.log)
 
 if [$STAT -eq $PREV_STAT]
 then
@@ -201,7 +201,7 @@ else
   echo "/etc/crontab has been modified within the past 24 hours. An email will be sent to root."
   mail -s "/etc/crontab notification" root@roger < /home/ssulkuma/crontab_notice.txt
 fi
-stat -c %Z /etc/crontab | sudo tee /var/log/check_script.log
+stat -c %Z /etc/crontab | tee /var/log/check_script.log
 ```
 To schedule the script to happen at midnight, I change the crontab again and add the line to it:
 ```
@@ -289,7 +289,7 @@ input:focus {
 	<h1>Roger Skyline 1</h1>
 	<p>[ Username ] <input></input></br>
 	[ Password&nbsp; ] <input type="password"></input></p>
-	<div class="login"><a href="https://dolly-web.net">Login</a></div>
+	<div class="login"><a href="https://www.youtube.com/watch?v=ZVuToMilP0A">Login</a></div>
 </body>
 </html>
 ```
