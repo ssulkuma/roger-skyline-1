@@ -293,3 +293,23 @@ input:focus {
 </body>
 </html>
 ```
+______________________________________
+
+For the website, we're going to create a self-signed SSL. To do that I first enable mod_ssl (an Apache module that provides support for SSL encryption) and then restart the service to take these changes into account:
+```
+$ sudo a2enmod ssl
+$ sudo systemctl restart apache2
+```
+To then create the certificate and fill the information asked, I run the command:
+```
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+```
+```
+Country Name (2 letter code) [AU]:FI
+State or Province Name (full name) [Some-State]:Uusimaa
+Locality Name (eg, city) []:Helsinki
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Hive
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:192.168.56.1                       
+Email Address []:ssulkuma@roger.hive.fi
+```
