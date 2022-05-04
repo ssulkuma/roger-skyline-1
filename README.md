@@ -313,3 +313,12 @@ Organizational Unit Name (eg, section) []:
 Common Name (e.g. server FQDN or YOUR name) []:192.168.56.1                       
 Email Address []:ssulkuma@roger.hive.fi
 ```
+Then I want to modify the configuration file to use these changes so I add these lines to it:
+```
+$ sudo vim /etc/apache2/sites-available/000-default.conf
+```
+```
+SSLEngine on
+SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+```
