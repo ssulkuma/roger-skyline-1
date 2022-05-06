@@ -365,4 +365,27 @@ Then from the main window of the VM, I go to Settings -> Network -> Port forward
 ```
 $ sudo systemctl restart apache2
 ```
+I'll also update the fail2ban with new jail rules for apache:
+```
+$ sudo vim /etc/fail2ban/jail.local
+```
+```
+...
+[apache]
+enabled = true
+port = http,https
+bantime = 1m
+findtime = 1m
+maxretry = 3
+
+[apache-overflows]
+enabled = true
+port = http,https
+bantime = 1m
+findtime = 1m
+maxretry = 3
+```
+```
+$ sudo systemctl restart fail2ban
+```
 ______________________________________
