@@ -302,11 +302,11 @@ $ sudo systemctl restart apache2
 ```
 To then create the certificate and fill the information asked, I run the command:
 ```
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+$ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
 ```
 ```
 Country Name (2 letter code) [AU]:FI
-State or Province Name (full name) [Some-State]:Uusimaa
+State or Province Name (full name) [Some-State]:
 Locality Name (eg, city) []:Helsinki
 Organization Name (eg, company) [Internet Widgits Pty Ltd]:Hive
 Organizational Unit Name (eg, section) []:
@@ -318,7 +318,29 @@ Then I want to modify the configuration file to use these changes so I add these
 $ sudo vim /etc/apache2/sites-available/000-default.conf
 ```
 ```
-SSLEngine on
-SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
-SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+<VirtualHost *:443>
+	ServerName 192.168.56.1
+	SSLEngine on
+	SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+	SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+</VirtualHost>
+<VirtualHost *:80>
+	ServerName 192.168.56.1
+	Redirect / https://192.168.56.1
+</VirtualHost>
 ```
+To enable the configuration file and test that the syntax is okay with it, I run the commands:
+```
+$ sudo a2ensite
+$ sudo apache2ctl configtest
+```
+To allow access to the https, I need to change firewall rules:
+```
+$ sudo ufw allow 443/tcp
+$ sudo ufw status
+```
+Then from the main window of the VM, I go to Settings -> Network -> Port forwarding and add a new rule (https / - / 443 / - / 443). Lastly I want to restart the apache sevice:
+```
+$ sudo systemctl restart apache2
+```
+______________________________________
