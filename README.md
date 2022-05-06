@@ -44,7 +44,7 @@ network:
     enp0s8:
       dhcp4: no
       dhcp6: no
-      addresses: [192.168.56.253/30, ]
+      addresses: [192.168.56.2/30, ]
       gateway4: 192.168.56.1
       nameservers:
         addresses: [8.8.8.8, 8.8.4.4]
@@ -152,6 +152,28 @@ To list all the running services, I use the command:
 ```
 $ sudo service --status-all
 ```
+The list of services I want to keep running:
+```
+ [ + ]  apache2
+ [ + ]  apparmor
+ [ + ]  apport
+ [ + ]  atd
+ [ + ]  cron
+ [ + ]  dbus
+ [ + ]  fail2ban
+ [ + ]  kmod
+ [ + ]  multipath-tools
+ [ + ]  postfix
+ [ + ]  procps
+ [ + ]  rsyslog
+ [ + ]  ssh
+ [ + ]  udev
+ [ + ]  ufw
+ ```
+ I stop the services I don't need by running the command:
+ ```
+ $ sudo systemctl disable unattended-upgrades.service 
+ ```
 ______________________________________
 
 For the project, it's required to create a script which updates all the sources of packages and then my packages and logs the information. First I create a new file and write the script to it as follows:
