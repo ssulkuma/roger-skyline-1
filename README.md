@@ -16,6 +16,13 @@ Making sure that disk size and partition has been set correctly, I run the comma
 ```
 $ lsblk | grep sda
 ```
+______________________________________
+
+To create a new user with sudo rights:
+```
+$ sudo adduser testuser
+$ sudo adduser testuser sudo
+```
 
 # Network
 For setting up network, from the VirtualBox main window, I go to VM settings -> network and set Adapter 1 to bridged network.
@@ -81,6 +88,13 @@ I find the line with #Port 22 from the file and add my new port on the line unde
 ...
 #Port 22
 Port 2211
+...
+```
+And to disable possible root login via ssh, I add the following line under the commented line:
+```
+...
+#PermitRootLogin prohibit-password
+PermitRootLogin no
 ...
 ```
 
