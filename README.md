@@ -18,14 +18,14 @@ $ lsblk | grep sda
 ```
 
 # Network
-For setting up network, from the VirtualBox main window, I go to Global tools -> Host Network Manager -> create a new host-only network (vboxnet0 / 192.168.56.1/24 / disable DHCP Server). Then, from VM settings -> network, I set Adapter 1 to NAT and Adapter 2 to host-only network / vboxnet0.
+For setting up network, from the VirtualBox main window, I go to VM settings -> network and set Adapter 1 to bridged network.
 
 To list all network interfaces, I run the command:
 ```
 $ ifconfig
 ```
 
-I see the enp0s3 (NAT) has an IP set, but enp0s8 (host-only network) does not. The project asks us to set it a static IP, to do that I run the command:
+The project asks us to set it a static IP, to do that I run the command:
 ```
 $ sudo vim /etc/netplan/01-netcfg.yaml
 ```
@@ -40,18 +40,20 @@ network:
   renderer: networkd
   ethernets:
     enp0s3:
-      dhcp4: yes
-    enp0s8:
       dhcp4: no
       dhcp6: no
-      addresses: [192.168.56.2/30, ]
-      gateway4: 192.168.56.1
+      addresses: [10.11.254.253/30, ]
+      gateway4: 10.11.254.254
       nameservers:
         addresses: [8.8.8.8, 8.8.4.4]
 ```        
 After saving the file, I want to apply the changes I made, so I run the command:
 ```
 $ sudo netplan apply
+```
+To see I've had network connection, I test it with:
+```
+$ ping google.com
 ```
 
 Check wether I've succeeded:
@@ -182,9 +184,9 @@ $ vim update_script.sh
 ```
 ```
 #!/bin/bash
-date | tee -a /var/log/update_script.log
-apt update | tee -a /var/log/update_script.log
-apt upgrade | tee -a /var/log/update_script.log
+date | tee -a /var/log/update_script.log && \
+apt update | tee -a /var/log/update_script.log && \
+apt upgrade -y | tee -a /var/log/update_script.log
 ```
 To schedule the script to run at the required times, I want to create and modify the crontab:
 ```
@@ -250,7 +252,7 @@ $ sudo ufw app list
 $ sudo ufw app info Apache Full
 $ sudo ufw allow 80/tcp
 ```
-From the VM main window I go to Settings -> Network -> Adapter 1 Advanced -> Port forwarding and add a new rule (http / - / 80 / 192.168.56.253 / 80). Then by typing in the web browser the address, I check if I got it working.
+Then by typing in the web browser the address, I check if I got it working.
 ```
 http://192.168.56.1
 ```
@@ -332,7 +334,7 @@ State or Province Name (full name) [Some-State]:
 Locality Name (eg, city) []:Helsinki
 Organization Name (eg, company) [Internet Widgits Pty Ltd]:Hive
 Organizational Unit Name (eg, section) []:
-Common Name (e.g. server FQDN or YOUR name) []:192.168.56.1                       
+Common Name (e.g. server FQDN or YOUR name) []:10.11.254.253                       
 Email Address []:ssulkuma@roger.hive.fi
 ```
 Then I want to modify the configuration file to use these changes so I add these lines to it:
@@ -347,8 +349,8 @@ $ sudo vim /etc/apache2/sites-available/000-default.conf
 	SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
 </VirtualHost>
 <VirtualHost *:80>
-	ServerName 192.168.56.1
-	Redirect / https://192.168.56.1
+	ServerName 10.11.254.253
+	Redirect / https://10.11.254.253
 </VirtualHost>
 ```
 To enable the configuration file and test that the syntax is okay with it, I run the commands:
