@@ -254,7 +254,7 @@ $ sudo ufw allow 80/tcp
 ```
 Then by typing in the web browser the address, I check if I got it working.
 ```
-http://192.168.56.1
+http://10.11.254.253
 ```
 To change the html of the page I modify the file:
 ```
@@ -343,7 +343,7 @@ $ sudo vim /etc/apache2/sites-available/000-default.conf
 ```
 ```
 <VirtualHost *:443>
-	ServerName 192.168.56.1
+	ServerName 10.11.254.253
 	SSLEngine on
 	SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
 	SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
