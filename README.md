@@ -405,16 +405,38 @@ $ sudo vim /etc/fail2ban/jail.local
 [apache]
 enabled = true
 port = http,https
+filter = apache-auth
+logpath = /var/log/apache*/*error.log
 bantime = 1m
 findtime = 1m
-maxretry = 3
+maxretry = 5
+
+[apache-noscript]
+enabled = true
+port = http,https
+filter = apache-noscript
+logpath = /var/log/apache*/*error.log
+bantime = 1m
+findtime = 1m
+maxretry = 5
 
 [apache-overflows]
 enabled = true
 port = http,https
+filter = apache-overflows
+logpath = /var/log/apache*/*error.log
 bantime = 1m
 findtime = 1m
-maxretry = 3
+maxretry = 2
+
+[apache-badbots]
+enabled = true
+port = http,https
+filter = apache-badbots
+logpath = /var/log/apache*/*error.log
+bantime = 1m
+findtime = 1m
+maxretry = 2
 ```
 ```
 $ sudo systemctl restart fail2ban
