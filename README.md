@@ -11,7 +11,6 @@ After logging in, updates / upgrades are available so I run the commands:
 $ sudo apt update
 $ sudo apt upgrade
 ```
-
 Making sure that disk size and partition has been set correctly, I run the command:
 ```
 $ lsblk | grep sda
@@ -31,12 +30,10 @@ To list all network interfaces, I run the command:
 ```
 $ ifconfig
 ```
-
 The project asks us to set it a static IP, to do that I run the command:
 ```
 $ sudo vim /etc/netplan/01-netcfg.yaml
 ```
-
 And write the following in the file:
 ```
 #This file describes the network interfaces available on your system
@@ -62,7 +59,6 @@ To see I've had network connection, I test it with:
 ```
 $ ping google.com
 ```
-
 Check wether I've succeeded:
 ```
 $ ifconfig
@@ -73,12 +69,10 @@ To generate a ssh key, I run the command:
 ```
 $ ssh-keygen
 ```
-
 To copy the public key to server, I run the command:
 ```
 $ ssh-copy-id -i .ssh/id_rsa.pub user@host
 ```
-
 For the ssh the project requires changing the port. So I make changes in the /etc/ssh/sshd_config file:
 ```
 $ sudo vim /etc/ssh/sshd_config
@@ -90,14 +84,13 @@ I find the line with #Port 22 from the file and add my new port on the line unde
 Port 2211
 ...
 ```
-And to disable possible root login via ssh, I add the following line under the commented line:
+And to disable possible root login via ssh, I add the new rule:
 ```
 ...
 #PermitRootLogin prohibit-password
 PermitRootLogin no
 ...
 ```
-
 To take the changes into account, I'll restart the ssh service with the command:
 ```
 $ sudo systemctl restart ssh.service
@@ -132,7 +125,7 @@ $ sudo ufw allow 2211/tcp
 ```
 ______________________________________
 
-To protect for denial of service attacks (DOS) and protection for port scanning, I want to install fail2ban:
+To protect for denial of service attacks (DOS), I want to install fail2ban:
 ```
 $ sudo apt-get install fail2ban
 ```
@@ -151,16 +144,37 @@ port = 2211
 bantime = 1m
 findtime = 1m
 maxretry = 3
-
-[portscan]
-enabled = true
-bantime = 1m
-findtime = 1m
-maxretry = 1
 ```
 To take the changes into account, I run the command:
 ```
 $ sudo systemctl restart fail2ban
+```
+To test if the rule works, I try to ssh from my terminal 3 times with incorrect password and then from vm shell, run the command:
+```
+$ sudo fail2ban-client status sshd
+```
+And I should see the banned IP.
+______________________________________
+
+To protect from port scanning, I want to install portsentry and nmap (for testing):
+```
+$ sudo apt install portsentry
+$ sudo apt install nmap
+```
+Then I modify the configuration file to have portsentry protect the used open ports & comment out the default ports I don't need it to protect against:
+```
+$ sudo vim /etc/portsentry/portsentry.conf
+```
+```
+...
+#TCP_PORTS="1,11,15,79,111,119,143,540,635,1080,1524,2000,5742,6667,12345,12346,20034,27665,31337,32771,32772,32773,32774,40421,49724,54320"
+#UDP_PORTS="1,7,9,69,161,162,513,635,640,641,700,37444,34555,31335,32770,32771,32772,32773,32774,31337,54321"
+TCP_PORTS="25,80,443,2211"
+...
+```
+To take changes into account, I restart the service:
+```
+$ sudo systemctl restart portsentry
 ```
 ______________________________________
 
@@ -179,6 +193,7 @@ The list of services I want to keep running:
  [ + ]  fail2ban
  [ + ]  kmod
  [ + ]  multipath-tools
+ [ + ]  portsentry
  [ + ]  postfix
  [ + ]  procps
  [ + ]  rsyslog
