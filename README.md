@@ -161,15 +161,25 @@ To protect from port scanning, I want to install portsentry and nmap (for testin
 $ sudo apt install portsentry
 $ sudo apt install nmap
 ```
-Then I modify the configuration file to have portsentry protect the used open ports & comment out the default ports I don't need it to protect against:
+At first I want to change the portsentry mode to advanced, so I modify the /etc/default/portsentry file:
+```
+$ sudo vim /etc/default/portsentry
+```
+```
+...
+TCP_MODE="atcp"
+UDP_MODE="audp"
+```
+Then I modify the configuration file to have portsentry protect the used open ports & block them from scanning:
 ```
 $ sudo vim /etc/portsentry/portsentry.conf
 ```
 ```
 ...
-#TCP_PORTS="1,11,15,79,111,119,143,540,635,1080,1524,2000,5742,6667,12345,12346,20034,27665,31337,32771,32772,32773,32774,40421,49724,54320"
-#UDP_PORTS="1,7,9,69,161,162,513,635,640,641,700,37444,34555,31335,32770,32771,32772,32773,32774,31337,54321"
-TCP_PORTS="25,80,443,2211"
+BLOCK_UDP="1"
+BLOCK_TCP="1"
+...
+KILL_ROUTE="/sbin/iptables -I INPUT -s $TARGET$ -j DROP"
 ...
 ```
 To take changes into account, I restart the service:
