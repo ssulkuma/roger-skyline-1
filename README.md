@@ -453,12 +453,21 @@ $ sudo systemctl restart fail2ban
 ```
 ______________________________________
 
-For the automated deployment part, I decided on the use of ssh connection and Visual Studio Code as the main tools. By installing Remote - SSH extension on the Visual Studio, I can get access to the local files on the VM. 
-
-From the command palette I type Remote-ssh -> add new ssh host:
+For the automated deployment part, I decided on the use FTP server. To install it, I run the command:
 ```
-$ ssh -p 2211 ssulkuma@10.11.254.253
+$ sudo apt install vsftpd
 ```
-And add the new ssh configuration to the list. Then typing in and choosing Remote-ssh -> connect to host -> password, I connect to the VM with ssh. After that I want to install the html preview extension to Visual Studio.
-
-With the tools set, I can preview and debug the changes in the html file without the changes showing on the live server, until they're ready.
+To make the needed changes, I modify the configuration file:
+```
+$ sudo vim /etc/vsftpd.conf
+```
+```
+...
+local_enable=YES
+write_enable=YES
+...
+```
+Restart the the services:
+```
+$ sudo systemctl restart vsftpd
+```
