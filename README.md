@@ -402,7 +402,7 @@ To allow access to the https, I need to change firewall rules:
 $ sudo ufw allow 443/tcp
 $ sudo ufw status
 ```
-Then from the main window of the VM, I go to Settings -> Network -> Port forwarding and add a new rule (https / - / 443 / - / 443). Lastly I want to restart the apache sevice:
+Lastly I want to restart the apache sevice:
 ```
 $ sudo systemctl restart apache2
 ```
