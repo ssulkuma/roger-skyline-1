@@ -22,6 +22,11 @@ To create a new user with sudo rights:
 $ sudo adduser testuser
 $ sudo adduser testuser sudo
 ```
+To give it ssh access:
+```
+$ sudo mkdir /home/testuser/.ssh
+$ sudo cp .ssh/id_rsa.pub /home/testuser/.ssh/authorized_keys
+```
 
 # Network
 For setting up network, from the VirtualBox main window, I go to VM settings -> network and set Adapter 1 to bridged network.
@@ -32,7 +37,7 @@ $ ifconfig
 ```
 The project asks us to set it a static IP, to do that I run the command:
 ```
-$ sudo vim /etc/netplan/01-netcfg.yaml
+$ sudo vim /etc/netplan/00-installer-config.yaml
 ```
 And write the following in the file:
 ```
@@ -40,8 +45,6 @@ And write the following in the file:
 #For more infromation, see netplan(5).
 
 network:
-  version: 2
-  renderer: networkd
   ethernets:
     enp0s3:
       dhcp4: no
@@ -50,6 +53,7 @@ network:
       gateway4: 10.11.254.254
       nameservers:
         addresses: [8.8.8.8, 8.8.4.4]
+  version: 2
 ```        
 After saving the file, I want to apply the changes I made, so I run the command:
 ```
@@ -65,7 +69,7 @@ $ ifconfig
 ```
 ______________________________________
 
-To generate a ssh key, I run the command:
+To generate a ssh key (with a passphrase), I run the command:
 ```
 $ ssh-keygen
 ```
@@ -84,11 +88,14 @@ I find the line with #Port 22 from the file and add my new port on the line unde
 Port 2211
 ...
 ```
-And to disable possible root login via ssh, I add the new rule:
+And to disable possible root login and password authentication via ssh, I modify the rules:
 ```
 ...
 #PermitRootLogin prohibit-password
 PermitRootLogin no
+...
+PasswordAuthentication no
+PubkeyAuthentication yes
 ...
 ```
 To take the changes into account, I'll restart the ssh service with the command:
@@ -181,6 +188,8 @@ BLOCK_TCP="1"
 ...
 KILL_ROUTE="/sbin/iptables -I INPUT -s $TARGET$ -j DROP"
 ...
+#KILL_HOSTS_DENY="ALL : $TARGET$ : DENY"
+....
 ```
 To take changes into account, I restart the service:
 ```
@@ -194,7 +203,6 @@ $ sudo service --status-all
 ```
 The list of services I want to keep running:
 ```
- [ + ]  apache2
  [ + ]  apparmor
  [ + ]  apport
  [ + ]  atd
@@ -203,6 +211,7 @@ The list of services I want to keep running:
  [ + ]  fail2ban
  [ + ]  kmod
  [ + ]  multipath-tools
+ [ + ]  nginx
  [ + ]  portsentry
  [ + ]  postfix
  [ + ]  procps
@@ -224,8 +233,8 @@ $ vim update_script.sh
 ```
 #!/bin/bash
 date | tee -a /var/log/update_script.log && \
-apt update | tee -a /var/log/update_script.log && \
-apt upgrade -y | tee -a /var/log/update_script.log
+apt-get update | tee -a /var/log/update_script.log && \
+apt-get upgrade -y | tee -a /var/log/update_script.log
 ```
 To schedule the script to run at the required times, I want to create and modify the crontab:
 ```
@@ -273,22 +282,15 @@ $ sudo crontab -e
 ```
 0 0 * * * sh /home/ssulkuma/check_script.sh
 ```
-With the mailutils, we also need to update a new rule for firewall, so I check the info on Postfix and add a new port rule:
-```
-$ sudo ufw app list
-$ sudo ufw app info Postfix
-$ sudo ufw allow 25/tcp
-```
+
 # Web Part
 For the project we must set up a web server using either Apache or Nginx. I chose Apache. To install it, I run the commands:
 ```
 $ sudo apt update
-$ sudo apt install apache2
+$ sudo apt install nginx
 ```
-To change the firewall settings of Apache:
+To change the firewall settings of Nginx:
 ```
-$ sudo ufw app list
-$ sudo ufw app info Apache Full
 $ sudo ufw allow 80/tcp
 ```
 Then by typing in the web browser the address, I check if I got it working.
@@ -358,14 +360,9 @@ input:focus {
 ```
 ______________________________________
 
-For the website, we're going to create a self-signed SSL. To do that I first enable mod_ssl (an Apache module that provides support for SSL encryption) and then restart the service to take these changes into account:
+To then create the SSL certificate and fill the information asked, I run the command:
 ```
-$ sudo a2enmod ssl
-$ sudo systemctl restart apache2
-```
-To then create the certificate and fill the information asked, I run the command:
-```
-$ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/apache-selfsigned.key -out /etc/ssl/certs/apache-selfsigned.crt
+$ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
 ```
 ```
 Country Name (2 letter code) [AU]:FI
@@ -374,79 +371,92 @@ Locality Name (eg, city) []:Helsinki
 Organization Name (eg, company) [Internet Widgits Pty Ltd]:Hive
 Organizational Unit Name (eg, section) []:
 Common Name (e.g. server FQDN or YOUR name) []:10.11.254.253                       
-Email Address []:ssulkuma@roger.hive.fi
+Email Address []:
 ```
-Then I want to modify the configuration file to use these changes so I add these lines to it:
+We also want to negotiate perfect forward secrecy (strong DH group) with clients so we generate the next command:
 ```
-$ sudo vim /etc/apache2/sites-available/000-default.conf
+$ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+```
+Then I want to create a snippet configuration file to use these changes so I add these lines to it:
+```
+$ sudo vim /etc/nginx/snippets/self-signed.conf
 ```
 ```
-<VirtualHost *:443>
-	ServerName 10.11.254.253
-	SSLEngine on
-	SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
-	SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
-</VirtualHost>
-<VirtualHost *:80>
-	ServerName 10.11.254.253
-	Redirect / https://10.11.254.253
-</VirtualHost>
+ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
 ```
-To enable the configuration file and test that the syntax is okay with it, I run the commands:
+To make sure we run the Nginx SSL securely, I modify another snippet conf file to so:
 ```
-$ sudo a2ensite
-$ sudo apache2ctl configtest
+$ sudo vim /etc/nginx/snippets/ssl-params.conf
+```
+```
+# from https://cipherli.st/
+# and https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
+
+ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+ssl_prefer_server_ciphers on;
+ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+ssl_ecdh_curve secp384r1;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+ssl_stapling on;
+ssl_stapling_verify on;
+resolver 8.8.8.8 8.8.4.4 valid=300s;
+resolver_timeout 5s;
+# Disable preloading HSTS for now.  You can use the commented out header line that includes
+# the "preload" directive if you understand the implications.
+#add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
+add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";
+add_header X-Frame-Options DENY;
+add_header X-Content-Type-Options nosniff;
+
+ssl_dhparam /etc/ssl/certs/dhparam.pem;
+```
+Finally we want to start using the SSL:
+```
+$ sudo vim /etc/nginx/sites-available/default
+```
+```
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name 10.11.254.253;
+    return 301 https://10.11.254.253;
+}
+
+server {
+
+    # SSL configuration
+
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server;
+    include snippets/self-signed.conf;
+    include snippets/ssl-params.conf;
+}
 ```
 To allow access to the https, I need to change firewall rules:
 ```
 $ sudo ufw allow 443/tcp
 $ sudo ufw status
 ```
-Lastly I want to restart the apache sevice:
+Lastly I want to restart the nginx sevice:
 ```
-$ sudo systemctl restart apache2
+$ sudo systemctl restart nginx.service
 ```
-I'll also update the fail2ban with new jail rules for apache:
+I'll also update the fail2ban with new jail rules against dos attack:
 ```
 $ sudo vim /etc/fail2ban/jail.local
 ```
 ```
 ...
-[apache]
+[http-get-dos]
 enabled = true
 port = http,https
-filter = apache-auth
-logpath = /var/log/apache*/*error.log
+filter = http-get-dos
+logpath = /var/log/nginx/acccess.log*
 bantime = 1m
-findtime = 1m
-maxretry = 5
-
-[apache-noscript]
-enabled = true
-port = http,https
-filter = apache-noscript
-logpath = /var/log/apache*/*error.log
-bantime = 1m
-findtime = 1m
-maxretry = 5
-
-[apache-overflows]
-enabled = true
-port = http,https
-filter = apache-overflows
-logpath = /var/log/apache*/*error.log
-bantime = 1m
-findtime = 1m
-maxretry = 2
-
-[apache-badbots]
-enabled = true
-port = http,https
-filter = apache-badbots
-logpath = /var/log/apache*/*error.log
-bantime = 1m
-findtime = 1m
-maxretry = 2
+findtime = 3m
+maxretry = 100
 ```
 ```
 $ sudo systemctl restart fail2ban
