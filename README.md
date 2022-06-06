@@ -460,6 +460,16 @@ logpath = /var/log/nginx/acccess.log*
 bantime = 1m
 findtime = 3m
 maxretry = 100
+
+[ban-timeout]
+enabled = true
+logpath = /var/log/nginx/access.log
+filter =
+port = 80,443
+failregex = ^<ADDR> \S+ \S+(?: \[\])? "[^"]*" 408\s
+maxretry = 3
+findtime = 3m
+bantime = 1m
 ```
 ```
 $ sudo systemctl restart fail2ban
