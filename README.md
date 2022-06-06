@@ -418,20 +418,23 @@ $ sudo vim /etc/nginx/sites-available/default
 ```
 ```
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name 10.11.254.253;
-    return 301 https://10.11.254.253;
-}
-
-server {
 
     # SSL configuration
 
-    listen 443 ssl http2 default_server;
-    listen [::]:443 ssl http2 default_server;
+    listen 443 ssl;
+    listen [::]:443 ssl;
     include snippets/self-signed.conf;
     include snippets/ssl-params.conf;
+    root /var/www/html;
+    index index.html;
+}
+server {
+    listen 80;
+    listen [::]:80;
+    server_name 10.11.254.253;
+    root /var/www/html;
+    index index.html;
+    return 301 https://10.11.254.253;
 }
 ```
 To allow access to the https, I need to change firewall rules:
