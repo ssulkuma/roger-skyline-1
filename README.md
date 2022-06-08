@@ -476,21 +476,43 @@ $ sudo systemctl restart fail2ban
 ```
 ______________________________________
 
-For the automated deployment part, I decided on the use FTP server. To install it, I run the command:
+For the automated deployment part, I wrote a script. For the script to work, we need to generate a new ssh key without passphrase and name it deploy on another vm for example:
 ```
-$ sudo apt install vsftpd
+$ ssh-keygen
 ```
-To make the needed changes, I modify the configuration file:
+Add the key to authorized_file:
 ```
-$ sudo vim /etc/vsftpd.conf
+$ ssh-copy-id -i .ssh/deploy.pub ssulkuma@10.11.254.253 -p 2211
+```
+The deployment script (make sure paths are correct for local and current):
+```
+$ vim deploy_script.sh
 ```
 ```
-...
-local_enable=YES
-write_enable=YES
-...
-```
-Restart the the services:
-```
-$ sudo systemctl restart vsftpd
+#!bin/bash
+LOCAL=./web/index.html
+DEPLOY=/var/www/html/index.html
+DIFF=$(scp -P 2211 -i .ssh/deploy ssulkuma@10.11.254.253:/var/www/html/index.html ./deploy/index.html)
+CURRENT=./deploy/index.html
+DOT=1
+diff $LOCAL $CURRENT
+
+if [ $? -eq 1 ]
+then
+	echo "Changes in the file identified."
+	sleep 2
+	echo "Deploying updated version."
+	sleep 2
+	scp -P 2211 -i .ssh/deploy $LOCAL ssulkuma@10.11.254.253:$DEPLOY
+	echo -n "Deploying"
+	while [ $DOT -le 5 ]
+	do
+		sleep 1
+		echo -n "."
+		DOT=$(($DOT+1))
+	done
+	echo " Deployment succeeded."
+else
+	echo "No changes have been made in the file."
+fi
 ```
