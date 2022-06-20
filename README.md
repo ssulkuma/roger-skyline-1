@@ -470,6 +470,15 @@ failregex = ^<ADDR> \S+ \S+(?: \[\])? "[^"]*" 408\s
 maxretry = 3
 findtime = 3m
 bantime = 1m
+
+[port-block]
+enabled = true
+filter =
+failregex = .*\[UFW BLOCK\] IN=.* SRC=<HOST>
+logpath = /var/log/syslog
+findtime = 3m
+maxretry = 10
+bantime = 3m
 ```
 ```
 $ sudo systemctl restart fail2ban
