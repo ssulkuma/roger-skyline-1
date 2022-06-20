@@ -205,12 +205,10 @@ The list of services I want to keep running:
 ```
  [ + ]  apparmor
  [ + ]  apport
- [ + ]  atd
  [ + ]  cron
  [ + ]  dbus
  [ + ]  fail2ban
  [ + ]  kmod
- [ + ]  multipath-tools
  [ + ]  nginx
  [ + ]  portsentry
  [ + ]  postfix
@@ -232,8 +230,8 @@ $ vim update_script.sh
 ```
 ```
 #!/bin/bash
-date | tee -a /var/log/update_script.log && \
-apt-get update | tee -a /var/log/update_script.log && \
+date | tee -a /var/log/update_script.log 
+apt-get update | tee -a /var/log/update_script.log 
 apt-get upgrade -y | tee -a /var/log/update_script.log
 ```
 To schedule the script to run at the required times, I want to create and modify the crontab:
@@ -421,16 +419,14 @@ server {
 
     # SSL configuration
 
-    listen 443 ssl;
-    listen [::]:443 ssl;
+    listen 10.11.254.253:443 ssl;
     include snippets/self-signed.conf;
     include snippets/ssl-params.conf;
     root /var/www/html;
     index index.html;
 }
 server {
-    listen 80;
-    listen [::]:80;
+    listen 10.11.254.253:80;
     server_name 10.11.254.253;
     root /var/www/html;
     index index.html;
